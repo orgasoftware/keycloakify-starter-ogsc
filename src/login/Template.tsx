@@ -58,7 +58,6 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
 
                 </div>
             </div>
-
             <div className="col-xs-12 col-sm-6 colRight">
                 <div className={kcClsx("kcLoginClass")}>
                     <div className={'loginBody'}>
