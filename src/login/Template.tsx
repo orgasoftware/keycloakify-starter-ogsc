@@ -1,4 +1,4 @@
-import {useEffect} from "react";
+import {useState, useEffect} from "react";
 import {assert} from "keycloakify/tools/assert";
 import {clsx} from "keycloakify/tools/clsx";
 import type {TemplateProps} from "keycloakify/login/TemplateProps";
@@ -7,6 +7,8 @@ import {useSetClassName} from "keycloakify/tools/useSetClassName";
 import {useStylesAndScripts} from "keycloakify/login/Template.useStylesAndScripts";
 import type {I18n} from "./i18n";
 import type {KcContext} from "./KcContext";
+import {v4 as uuidv4} from 'uuid';
+import queryString from 'query-string';
 
 export default function Template(props: TemplateProps<KcContext, I18n>) {
     const {
@@ -31,8 +33,120 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
 
     const {realm, locale, auth, url, message, isAppInitiatedAction} = kcContext;
 
+    const [backgroundImage, setBackgroundImage] = useState(null);
+    const [logoSite, setLogoSite] = useState(null);
+    const [logoFooter, setLogoFooter] = useState(null);
+    const [loginDescription, setLoginDescription] = useState(null);
+    const [footerNavig, setFooterNavig] = useState(null);
+
+    const urlBackOgs = kcContext.client.baseUrlx || 'http://192.168.1.111:3100/';
+
+    const getMentionsLegales = (item) => {
+
+        if (item.click == 'inscription') return;
+
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(
+                {
+                    dossier: 'mentions_legales',
+                    origine: item.data.origine,
+                    fichier: item.data.fichier,
+                    id: item.data.id,
+                    table: 'fichiers_preferences'
+                }
+            )
+        };
+
+        fetch(urlBackOgs + 'rapi/mentions_legales', requestOptions)
+            .then((response) => response.blob())
+            .then((blob) => {
+                console.log('done')
+                // Create blob link to download
+                const url = window.URL.createObjectURL(
+                    new Blob([blob], {type: 'application/pdf'}),
+                );
+                const link = document.createElement('a');
+                link.href = url;
+                /*link.setAttribute(
+                    'download',
+                    `FileName.txt`,
+                );*/
+                link.setAttribute(
+                    'target',
+                    `_blank`,
+                );
+
+                // Append to html link element page
+                document.body.appendChild(link);
+
+                // Start download
+                link.click();
+
+                // Clean up and remove the link
+                link.parentNode.removeChild(link);
+            });
+    }
+
+    const getUrl = (item) => {
+        const options = {
+            dossier: 'mentions_legales',
+            origine: item.data.origine,
+            fichier: item.data.fichier,
+            id: item.data.id,
+            table: 'fichiers_preferences'
+        }
+        return '/rapi/mentions_legales?' + queryString.stringify(options);
+    };
+
+    const mentionsLegalesTemplate = (item) => {
+        if (item.data) {
+            return (<a key={uuidv4()} href={getUrl(item)} download={item.data.fichier} onClick={() => {
+                //getMentionsLegales(item);
+            }}>{item.label[locale.currentLanguageTag + '_' + locale.currentLanguageTag]}</a>)
+        }
+        if (item.label.code == 'login.INSCRIPTION') {
+            return (<a key={uuidv4()} href={url.registrationUrl}>{item.label[locale.currentLanguageTag + '_' + locale.currentLanguageTag]}</a>)
+        }
+        return (
+            <span key={uuidv4()}>{item.label[locale.currentLanguageTag + '_' + locale.currentLanguageTag]}</span>
+        );
+    }
+
+    const navigationFooter = (navig) => {
+        if (!navig) {
+            return
+        }
+        return (
+            <span>
+                {navig.map((item, key) => (
+                    <span key={uuidv4()}>{key > 0 && (
+                        <span className="separatorFooter">|</span>)}{mentionsLegalesTemplate(item)}</span>
+                ))}
+            </span>
+        );
+    }
+
+
     useEffect(() => {
-        document.title = 'Démo OGSC';//documentTitle ?? msgStr("loginTitle", kcContext.realm.displayName);
+        //const url = kcContext.client.baseUrl || 'http://192.168.1.111:3100/';
+        console.log(urlBackOgs)
+        fetch(urlBackOgs + 'rapi/get_nom_site')
+            .then(response => response.json())
+            .then(data => {
+                setBackgroundImage(data.image_accueil);
+                setLogoSite(data.logo_login);
+                setLogoFooter(data.logo_pdp);
+                //setFooterNavig(data.login_navigation);
+                const navig = navigationFooter(data.login_navigation);
+                setFooterNavig(navig);
+                setLoginDescription(data.login_description[locale.currentLanguageTag + '_' + locale.currentLanguageTag]);
+                document.title = data.nom_site;
+            });
+        //document.title = 'Démo OGSC';//documentTitle ?? msgStr("loginTitle", kcContext.realm.displayName);
     }, []);
 
     useSetClassName({
@@ -54,7 +168,7 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
     return (
         <div className={kcClsx("col-sm-12 colLeft")}>
             <div className="col-sm-6 hidden-xs colLeft">
-                <div className="backgroundColLeft">
+                <div className="backgroundColLeft" style={{backgroundImage: `url('${backgroundImage}')`}}>
 
                 </div>
             </div>
@@ -62,7 +176,7 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
                 <div className={kcClsx("kcLoginClass")}>
                     <div className={'loginBody'}>
                         <div id="kc-header" className={kcClsx("kcHeaderClass")}>
-                            <img src={`${import.meta.env.BASE_URL}logo-header-demo.png`} width="100%"
+                            <img src={logoSite} width="100%"
                                  className="logoTop"></img>
                         </div>
                         <div className={kcClsx("kcFormCardClass")}>
@@ -110,8 +224,9 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
                                     </div>
                                 )}
                                 {(() => {
-                                    const node = !(auth !== undefined && auth.showUsername && !auth.showResetCredentials) ? (
-                                        <div id="kc-page-title">{headerNode}</div>
+                                    if (kcContext.pageId == 'register.ftl') return null;
+                                    const node = !( auth !== undefined && auth.showUsername && !auth.showResetCredentials) ? (
+                                        <div id="kc-page-title">{loginDescription}</div>
                                     ) : (
                                         <div id="kc-username" className={kcClsx("kcFormGroupClass")}>
                                             <label id="kc-attempted-username">{auth.attemptedUsername}</label>
@@ -135,7 +250,7 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
                                             {msg("requiredFields")}
                                         </span>
                                                 </div>
-                                                <div className="col-md-10">{node}</div>
+                                                <div className="col-md-12">{node}</div>
                                             </div>
                                         );
                                     }
@@ -205,17 +320,9 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
                     </div>
                 </div>
                 <div className={'loginFooter'}>
-                    <img className={'logoFooter'} src={`${import.meta.env.BASE_URL}logo-orgasoftware.svg`}></img>
+                    <img className={'logoFooter'} src={logoFooter}></img>
                     <div>
-                        <a href="" className="">Apply</a>
-                        <span className="separatorFooter">|</span>
-                        <span>Version 4.3.0 - KC</span>
-                        <span className="separatorFooter">|</span>
-                        <a href="" className="">Privacy policy</a>
-                        <span className="separatorFooter">|</span>
-                        <a href="">Legal terms</a>
-                        <span className="separatorFooter" ng-if="mentions_legales">|</span>
-                        <span>© All right reserved ORGASOFTWARE</span>
+                        {footerNavig}
                     </div>
                 </div>
             </div>

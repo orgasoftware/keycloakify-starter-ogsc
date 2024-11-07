@@ -13,7 +13,12 @@ export default meta;
 type Story = StoryObj<typeof meta>;
 
 export const Default: Story = {
-    render: () => <KcPageStory />
+    render: () => <KcPageStory
+        kcContext={{
+            locale: {
+                currentLanguageTag: "fr"
+            }
+        }}/>
 };
 
 export const WithInvalidCredential: Story = {

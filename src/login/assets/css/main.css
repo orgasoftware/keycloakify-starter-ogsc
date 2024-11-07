@@ -1,6 +1,7 @@
 :root {
     --ogs-primary: #428bca;
     --ogs-primary-light: rgba(66, 139, 202, 0.75);
+    --pf-global--disabled-color--100:rgba(255, 255, 255, 0.4);;
 }
 
 #root {
@@ -16,10 +17,13 @@
     width: 100%;
     height: 100%;
     background-color: transparent;
-    background: url("../img/background-demo.png");
+    /*background: url("../img/background-demo.png");*/
     background-size: cover;
     background-repeat: no-repeat;
     background-position: center center;
+    -webkit-backdrop-filter: blur(5px);
+
+    backdrop-filter: blur(5px);
 }
 
 .colRight {
@@ -61,10 +65,17 @@
 #kc-page-title {
     color: var(--ogs-primary);
     font-size: 16px;
+    margin-top: 15px;
+    max-height: 133px;
+    overflow-y: auto;
 }
 
 .kcFormCardClass {
     border-color: var(--ogs-primary);
+}
+
+.kcButtonPrimaryClass {
+    background-color: var(--ogs-primary)!important;
 }
 
 .kcButtonPrimaryClass {
@@ -79,4 +90,11 @@
     outline: none !important;
     border:1px solid var(--ogs-primary);
     box-shadow: 0 0 4px var(--ogs-primary-light);
+}
+
+.register-form-container {
+    max-height: 350px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    margin-bottom: 20px;
 }
