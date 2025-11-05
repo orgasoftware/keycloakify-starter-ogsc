@@ -39,7 +39,7 @@ export default function Template(props: TemplateProps<KcContext, I18n>) {
     const [loginDescription, setLoginDescription] = useState(null);
     const [footerNavig, setFooterNavig] = useState(null);
 
-    const urlBackOgs = kcContext.client.baseUrlx || 'http://192.168.1.111:3100/';
+    const urlBackOgs = kcContext.client.baseUrl;
 
     const getMentionsLegales = (item) => {
 

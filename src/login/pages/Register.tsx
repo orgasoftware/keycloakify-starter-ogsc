@@ -23,8 +23,6 @@ export default function Register(props: RegisterProps) {
     const { messageHeader, url, messagesPerField, recaptchaRequired, recaptchaVisible, recaptchaSiteKey, recaptchaAction, termsAcceptanceRequired } =
         kcContext;
 
-    console.log('yol1');
-
     const { msg, msgStr, advancedMsg } = i18n;
 
     const [isFormSubmittable, setIsFormSubmittable] = useState(false);

@@ -1,6 +1,6 @@
 {
-    "name": "keycloakify-starter",
-    "version": "0.0.0",
+    "name": "orgasourcing",
+    "version": "1.0.0",
     "description": "Starter for Keycloakify 10",
     "repository": {
         "type": "git",
@@ -30,7 +30,7 @@
         "i18next": "^23.11.5",
         "i18next-http-backend": "^2.5.2",
         "keycloak-js": "25.0.4",
-        "keycloakify": "^10.1.4",
+        "keycloakify": "^11.8.23",
         "lodash-es": "^4.17.21",
         "query-string": "^9.1.0",
         "react": "^18.2.0",
